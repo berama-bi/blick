@@ -51,4 +51,3 @@ jobs:
         with:
           name: blick-export
           path: blick_export.json
-``
