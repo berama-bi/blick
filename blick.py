@@ -3,15 +3,6 @@ import json
 import time
 
 SEARCH_TERMS = [
-    "wingo",
-    "swisscom",
-    "coop mobile",
-    "migros mobile",
-    "spusu",
-    "yallo",
-    "sunrise",
-    "salt",
-    "quickline",
     "chmobile",
     "gomo",
     "galaxus mobile",
