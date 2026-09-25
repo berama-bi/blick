@@ -14,9 +14,8 @@ SEARCH_TERMS = [
     "quickline",
     "chmobile",
     "gomo",
-"galaxus mobile",
-"talktalk"
-
+    "galaxus mobile",
+    "talktalk"
 ]
 
 SEARCH_URL = "https://search.ws.blick.ch/search"
@@ -170,12 +169,7 @@ def get_all_comments(article_id):
     return comments
 
 
-output = {
-    "generated_at": time.strftime(
-        "%Y-%m-%d %H:%M:%S"
-    ),
-    "searches": []
-}
+output = []
 
 for term in SEARCH_TERMS:
 
@@ -184,15 +178,7 @@ for term in SEARCH_TERMS:
     print("SUCHE:", term)
     print("=" * 60)
 
-    articles = get_all_search_results(
-        term
-    )
-
-    search_data = {
-        "search_term": term,
-        "article_count": len(articles),
-        "articles": []
-    }
+    articles = get_all_search_results(term)
 
     for idx, article in enumerate(
         articles,
@@ -220,6 +206,18 @@ for term in SEARCH_TERMS:
                 + href
             )
 
+        title = article.get(
+            "title"
+        )
+
+        lead = article.get(
+            "lead"
+        )
+
+        published_date = article.get(
+            "publishedDate"
+        )
+
         print()
         print(
             f"[ARTICLE] "
@@ -227,6 +225,27 @@ for term in SEARCH_TERMS:
             f"ID={article_id}"
         )
 
+        #
+        # NEWS RECORD
+        #
+        output.append({
+            "record_type": "news",
+            "search_term": term,
+            "article_id": article_id,
+            "url": article_url,
+            "title": title,
+            "lead": lead,
+            "published_date": published_date,
+
+            "comment_id": None,
+            "comment_body": None,
+            "comment_user": None,
+            "comment_created": None
+        })
+
+        #
+        # COMMENTS
+        #
         comments = []
 
         if article_id:
@@ -234,21 +253,42 @@ for term in SEARCH_TERMS:
                 article_id
             )
 
-        search_data["articles"].append(
-            {
+        for comment in comments:
+
+            output.append({
+                "record_type": "comment",
+                "search_term": term,
                 "article_id": article_id,
                 "url": article_url,
-                "article": article,
-                "comment_count": len(comments),
-                "comments": comments
-            }
-        )
+                "title": title,
+                "lead": lead,
+                "published_date": published_date,
+
+                "comment_id":
+                    comment.get(
+                        "id"
+                    ),
+
+                "comment_body":
+                    comment.get(
+                        "body"
+                    ),
+
+                "comment_user":
+                    comment.get(
+                        "user",
+                        {}
+                    ).get(
+                        "name"
+                    ),
+
+                "comment_created":
+                    comment.get(
+                        "created"
+                    )
+            })
 
         time.sleep(0.2)
-
-    output["searches"].append(
-        search_data
-    )
 
 with open(
     "blick_export.json",
@@ -266,14 +306,7 @@ with open(
 print()
 print("=" * 60)
 print("FERTIG")
+print(f"Datensätze: {len(output):,}")
 print("Datei gespeichert:")
 print("  blick_export.json")
 print("=" * 60)
-
-print(
-    json.dumps(
-        output,
-        ensure_ascii=False,
-        indent=2
-    )
-)
